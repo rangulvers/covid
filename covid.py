@@ -1,11 +1,10 @@
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
 import os
 import wget
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -86,9 +85,8 @@ fig_death = px.line(x=df_death_flat["Date"], y=df_death_flat["count"],
                     color=df_death_flat["Country/Region"],
                     title="Death")
 
-
-app = dash.Dash(__name__)
-
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(children=[
 
