@@ -1,34 +1,31 @@
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-# import matplotlib.pyplot as plt
+
 import plotly.graph_objects as go
 import plotly.express as px
-import os
-import wget
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 
 
-file_list = ['covid_confirmed.csv',
-             "covid_death.csv",
-             "covid_recovered.csv"]
-for file in file_list:
-    if os.path.exists(file):
-        os.remove(file)
+# file_list = ['covid_confirmed.csv',
+#              "covid_death.csv",
+#              "covid_recovered.csv"]
+# for file in file_list:
+#     if os.path.exists(file):
+#         os.remove(file)
 
 url_con = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 urL_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
 url_recover = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 
-wget.download(url_con, 'covid_confirmed.csv', )
-wget.download(urL_death, 'covid_death.csv', )
-wget.download(url_recover, 'covid_recovered.csv', )
+# #
 
 
-df_confirmed = pd.read_csv("covid_confirmed.csv", error_bad_lines=False)
-df_death = pd.read_csv("covid_death.csv", error_bad_lines=False)
-df_recovered = pd.read_csv("covid_recovered.csv", error_bad_lines=False)
+df_confirmed = pd.read_csv(url_con, error_bad_lines=False)
+df_death = pd.read_csv(urL_death, error_bad_lines=False)
+df_recovered = pd.read_csv(url_recover, error_bad_lines=False)
 
 df_confirmed_flat = df_confirmed.melt(var_name="Date", value_name="count", id_vars=[
     "Province/State", "Country/Region", "Lat", "Long"])
@@ -113,7 +110,6 @@ app.layout = html.Div(children=[
         figure=fig_death
     )
 ])
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
