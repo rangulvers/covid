@@ -90,6 +90,12 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 app.layout = html.Div(children=[
 
+    html.Div(children=[
+        dcc.Markdown('''
+        # COVID-19 Dashboard
+        All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData)''')
+    ]),
+
     dcc.Graph(
         id='con-graph-wordlwide',
         figure=fig_byDateWorldWide
@@ -106,7 +112,6 @@ app.layout = html.Div(children=[
         id='con-map',
         figure=fig_death
     )
-
 ])
 
 
