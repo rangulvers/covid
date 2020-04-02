@@ -51,7 +51,7 @@ df_death_flat = df_death_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
 
 
-current_confirmend = byDateWorldWide.tail(1)
+current_confirmend = byDateWorldWide.tail(2)
 
 # Setup Charts
 fig_byDateWorldWide = px.scatter()
@@ -95,7 +95,10 @@ app.layout = html.Div(className='container-fluid', children=[
         # COVID-19 Dashboard
         All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})'''),
         dcc.Markdown(
-            f''' ## Total Cases  {current_confirmend["count"].values[0]}  | Diff to day before : {current_confirmend["diff"].values[0]}  | PCT_Change : {current_confirmend["pct_change"].values[0]}''')
+            f'''
+            ### Total Cases :  {current_confirmend["count"].tail(1).values[0]} ({current_confirmend["count"].head(1).values[0]})
+            ### Diff to day before : {current_confirmend["diff"].tail(1).values[0]} ({current_confirmend["diff"].head(1).values[0]}) 
+            ### PCT_Change : {current_confirmend["pct_change"].tail(1).values[0]} ({current_confirmend["pct_change"].head(1).values[0]})''')
     ]),
     html.Div(className='row', children=[
         html.Div(className='col-sm-6', children=[
