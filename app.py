@@ -6,6 +6,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 
+
 # URLS
 url_con = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 urL_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
@@ -44,11 +45,11 @@ byDateCountry = byDateCountry.drop(columns=["Lat", "Long"])
 byDateWorldWide = byDateCountry.groupby("Date", as_index=False).sum()
 byDateWorldWide["pct_change"] = byDateWorldWide['count'].pct_change()
 byDateWorldWide["diff"] = byDateWorldWide['count'].diff()
-byDateWorldWide["diff_10"] = byDateWorldWide['count'].diff(periods=10)
 df_death_flat = df_death_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
 
 
+current_confirmend = byDateWorldWide.tail(1)
 
 # Setup Charts
 fig_byDateWorldWide = px.scatter()
@@ -81,33 +82,47 @@ fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
     y=byDateCountry["Date"],
     colorscale='Viridis'))
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = [
+    'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
-app.layout = html.Div(children=[
-    dcc.Markdown('''
+app.layout = html.Div(className='container-fluid', children=[
+
+    html.Div(className='jumbotron', children=[
+        dcc.Markdown(f'''
         # COVID-19 Dashboard
-        All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData)'''),
-    dcc.Graph(
-        id='fig_byDateWorldWide',
-        figure=fig_byDateWorldWide
-    ),
-    dcc.Graph(
-        id='fig_confirmed_heatmap',
-        figure=fig_confirmed_heatmap
-    ),
-    dcc.Graph(
-        id='fig_byDateWorldWidePct',
-        figure=fig_byDateWorldWidePct
-    ),
-    dcc.Graph(
-        id='fig_byDateCountry',
-        figure=fig_byDateCountry
-    ),
-    dcc.Graph(
-        id='fig_deat',
-        figure=fig_death
-    )
+        All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})'''),
+        dcc.Markdown(
+            f''' ## Total Cases  {current_confirmend["count"].values[0]}  | Diff to day before : {current_confirmend["diff"].values[0]}  | PCT_Change : {current_confirmend["pct_change"].values[0]}''')
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-sm-6', children=[
+            dcc.Graph(
+                id='fig_byDateWorldWide',
+                figure=fig_byDateWorldWide
+            ),
+        ]),
+        html.Div(className='col-sm-6', children=[
+            dcc.Graph(
+                id='fig_confirmed_heatmap',
+                figure=fig_confirmed_heatmap
+            ),
+        ])
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-sm-6', children=[
+            dcc.Graph(
+                       id='fig_byDateWorldWidePct',
+                       figure=fig_byDateWorldWidePct
+            )
+        ]),
+        html.Div(className='col-sm-6', children=[
+            dcc.Graph(
+                id='fig_byDateCountry',
+                figure=fig_byDateCountry
+            ),
+        ]),
+    ])
 ])
 
 if __name__ == '__main__':
