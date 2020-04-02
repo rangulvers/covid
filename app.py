@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table
 
 
 # URLS
@@ -42,6 +43,7 @@ df_death_flat = df_death_flat.drop(columns=["Province/State", "Lat", "Long"])
 byDateCountry = df_confirmed_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
 byDateCountry = byDateCountry.drop(columns=["Lat", "Long"])
+byDateCountry = byDateCountry.sort_values("count")
 byDateWorldWide = byDateCountry.groupby("Date", as_index=False).sum()
 byDateWorldWide["pct_change"] = byDateWorldWide['count'].pct_change()
 byDateWorldWide["diff"] = byDateWorldWide['count'].diff()
