@@ -52,6 +52,16 @@ df_death_flat = df_death_flat.groupby(
 
 
 current_confirmend = byDateWorldWide.tail(2)
+df_global = df_confirmed.iloc[:, :4]
+df_global_1 = df_confirmed.iloc[:, -1]
+dfCombined = pd.concat([df_global, df_global_1], axis=1, sort=False)
+dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
+
+fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
+                                 color_discrete_sequence=["fuchsia"], zoom=0, height=300, size="count")
+fig_worldmap.update_layout(mapbox_style="open-street-map")
+fig_worldmap.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+
 
 # Setup Charts
 fig_byDateWorldWide = px.scatter()
@@ -100,14 +110,23 @@ app.layout = html.Div(className='container-fluid', children=[
             ### Diff to day before : {current_confirmend["diff"].tail(1).values[0]} ({current_confirmend["diff"].head(1).values[0]}) 
             ### PCT_Change : {current_confirmend["pct_change"].tail(1).values[0]} ({current_confirmend["pct_change"].head(1).values[0]})''')
     ]),
+
     html.Div(className='row', children=[
-        html.Div(className='col-sm-6', children=[
+        html.Div(className='col-sm-12', children=[
+             dcc.Graph(
+                 id='fig_byDateWorldWide',
+                 figure=fig_byDateWorldWide
+             ),
+             ]),
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-sm-4', children=[
             dcc.Graph(
-                id='fig_byDateWorldWide',
-                figure=fig_byDateWorldWide
+                id='fig_worldmap',
+                figure=fig_worldmap
             ),
         ]),
-        html.Div(className='col-sm-6', children=[
+        html.Div(className='col-sm-8', children=[
             dcc.Graph(
                 id='fig_confirmed_heatmap',
                 figure=fig_confirmed_heatmap
@@ -131,4 +150,4 @@ app.layout = html.Div(className='container-fluid', children=[
 ])
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
