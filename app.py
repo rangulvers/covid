@@ -86,6 +86,9 @@ fig_byDateWorldWidePct = px.line(x=byDateWorldWide["Date"],
                                  y=byDateWorldWide["pct_change"],
                                  title="PCT Change")
 
+fig_byDateWorldWide.update_layout(yaxis_type="log")
+fig_byDateWorldWidePct.update_layout(yaxis_type="log")
+
 fig_df_byDateCountry = px.line(x=df_byDateCountryTop5["Date"],
                                y=df_byDateCountryTop5["count"],
                                color=df_byDateCountryTop5["Country/Region"],
@@ -106,7 +109,6 @@ fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
     x=df_byDateCountry["Country/Region"],
     y=df_byDateCountry["Date"],
     colorscale='Viridis'))
-
 
 # Configure Dash layout and load data
 external_stylesheets = [
