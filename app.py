@@ -5,8 +5,6 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_table
-
 
 # URLS
 url_con = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
@@ -99,6 +97,7 @@ fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
 
 fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
                                  color_discrete_sequence=["fuchsia"], zoom=0, height=300, size="count")
+
 fig_worldmap.update_layout(mapbox_style="open-street-map")
 fig_worldmap.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
