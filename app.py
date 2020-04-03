@@ -42,7 +42,7 @@ df_death_flat = df_death_flat.drop(columns=["Province/State", "Lat", "Long"])
 # Confirmed Cases prep step
 byDateCountry = df_confirmed_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
-byDateCountry = byDateCountry.drop(columns=["Lat", "Long"])
+
 byDateCountry = byDateCountry.sort_values("count")
 byDateWorldWide = byDateCountry.groupby("Date", as_index=False).sum()
 byDateWorldWide["pct_change"] = byDateWorldWide['count'].pct_change()
@@ -51,11 +51,31 @@ df_death_flat = df_death_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
 
 
+# Create DataSet for Combined World Chart Map
 current_confirmend = byDateWorldWide.tail(2)
 df_global = df_confirmed.iloc[:, :4]
 df_global_1 = df_confirmed.iloc[:, -1]
 dfCombined = pd.concat([df_global, df_global_1], axis=1, sort=False)
 dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
+
+
+# Create Dateset to compare Total Cases vs Diff for the top 5 Coutries
+df_dateCountryDiffTotal = df_confirmed_flat.groupby(
+    ["Country/Region", "Date"]).sum()
+df_dateCountryDiffTotal["diff"] = df_dateCountryDiffTotal['count'].diff()
+df_dateCountryDiffTotal = df_dateCountryDiffTotal.reset_index()
+filter_list = dfCombined.sort_values("count").tail(5)["Country/Region"]
+filter_list = filter_list.to_list()
+df_dateCountryDiffTotal = df_dateCountryDiffTotal[df_dateCountryDiffTotal["Country/Region"].isin(
+    filter_list)]
+
+byDateCountryTop5 = byDateCountry[byDateCountry["Country/Region"].isin(
+    filter_list)]
+
+
+fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
+                                  y="diff", color="Country/Region")
+
 
 fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
                                  color_discrete_sequence=["fuchsia"], zoom=0, height=300, size="count")
@@ -78,9 +98,9 @@ fig_byDateWorldWidePct = px.line(x=byDateWorldWide["Date"],
                                  y=byDateWorldWide["pct_change"],
                                  title="PCT Change")
 
-fig_byDateCountry = px.line(x=byDateCountry["Date"],
-                            y=byDateCountry["count"],
-                            color=byDateCountry["Country/Region"],
+fig_byDateCountry = px.line(x=byDateCountryTop5["Date"],
+                            y=byDateCountryTop5["count"],
+                            color=byDateCountryTop5["Country/Region"],
                             title="Confirmed Cases by Date")
 
 fig_death = px.line(x=df_death_flat["Date"],
@@ -93,6 +113,10 @@ fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
     x=byDateCountry["Country/Region"],
     y=byDateCountry["Date"],
     colorscale='Viridis'))
+
+
+fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
+
 
 external_stylesheets = [
     'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
@@ -112,12 +136,18 @@ app.layout = html.Div(className='container-fluid', children=[
     ]),
 
     html.Div(className='row', children=[
-        html.Div(className='col-sm-12', children=[
+        html.Div(className='col-sm-6', children=[
              dcc.Graph(
                  id='fig_byDateWorldWide',
                  figure=fig_byDateWorldWide
              ),
              ]),
+        html.Div(className='col-sm-6', children=[
+            dcc.Graph(
+                id='fig_changesDiffTotal',
+                figure=fig_changesDiffTotal
+            ),
+        ]),
     ]),
     html.Div(className='row', children=[
         html.Div(className='col-sm-4', children=[
