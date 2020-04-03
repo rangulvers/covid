@@ -35,26 +35,28 @@ df_recoverd_flat = df_recoverd_flat[(
 
 # Change Dateformat of Date Column
 df_confirmed_flat["Date"] = pd.to_datetime(df_confirmed_flat["Date"])
-df_death_flat["Date"] = pd.to_datetime(df_death_flat["Date"])
-df_recoverd_flat["Date"] = pd.to_datetime(df_recoverd_flat["Date"])
-df_death_flat = df_death_flat.drop(columns=["Province/State", "Lat", "Long"])
+# df_death_flat["Date"] = pd.to_datetime(df_death_flat["Date"])
+# df_recoverd_flat["Date"] = pd.to_datetime(df_recoverd_flat["Date"])
+# df_death_flat = df_death_flat.drop(columns=["Province/State", "Lat", "Long"])
 
 # Confirmed Cases prep step
-byDateCountry = df_confirmed_flat.groupby(
+df_byDateCountry = df_confirmed_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
 
-byDateCountry = byDateCountry.sort_values("count")
-byDateWorldWide = byDateCountry.groupby("Date", as_index=False).sum()
+df_byDateCountry = df_byDateCountry.sort_values("count")
+byDateWorldWide = df_byDateCountry.groupby("Date", as_index=False).sum()
+byDateWorldWide = byDateWorldWide.drop(columns=["Lat", "Long"])
 byDateWorldWide["pct_change"] = byDateWorldWide['count'].pct_change()
 byDateWorldWide["diff"] = byDateWorldWide['count'].diff()
-df_death_flat = df_death_flat.groupby(
-    ["Date", "Country/Region"], as_index=False).sum()
+current_confirmend = byDateWorldWide.tail(2)
+# df_death_flat = df_death_flat.groupby(
+#     ["Date", "Country/Region"], as_index=False).sum()
 
 
 # Create DataSet for Combined World Chart Map
-current_confirmend = byDateWorldWide.tail(2)
+# take the first columns for country, province, lat and lon
 df_global = df_confirmed.iloc[:, :4]
-df_global_1 = df_confirmed.iloc[:, -1]
+df_global_1 = df_confirmed.iloc[:, -1]  # take last column for latest data
 dfCombined = pd.concat([df_global, df_global_1], axis=1, sort=False)
 dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
 
@@ -68,19 +70,8 @@ filter_list = dfCombined.sort_values("count").tail(5)["Country/Region"]
 filter_list = filter_list.to_list()
 df_dateCountryDiffTotal = df_dateCountryDiffTotal[df_dateCountryDiffTotal["Country/Region"].isin(
     filter_list)]
-
-byDateCountryTop5 = byDateCountry[byDateCountry["Country/Region"].isin(
+df_byDateCountryTop5 = df_byDateCountry[df_byDateCountry["Country/Region"].isin(
     filter_list)]
-
-
-fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
-                                  y="diff", color="Country/Region")
-
-
-fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
-                                 color_discrete_sequence=["fuchsia"], zoom=0, height=300, size="count")
-fig_worldmap.update_layout(mapbox_style="open-street-map")
-fig_worldmap.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
 
 # Setup Charts
@@ -93,31 +84,32 @@ fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
                             y=byDateWorldWide["diff"],
                             name="Diff by Date")
 
-
 fig_byDateWorldWidePct = px.line(x=byDateWorldWide["Date"],
                                  y=byDateWorldWide["pct_change"],
                                  title="PCT Change")
 
-fig_byDateCountry = px.line(x=byDateCountryTop5["Date"],
-                            y=byDateCountryTop5["count"],
-                            color=byDateCountryTop5["Country/Region"],
-                            title="Confirmed Cases by Date")
+fig_df_byDateCountry = px.line(x=df_byDateCountryTop5["Date"],
+                               y=df_byDateCountryTop5["count"],
+                               color=df_byDateCountryTop5["Country/Region"],
+                               title="Confirmed Cases by Date")
 
-fig_death = px.line(x=df_death_flat["Date"],
-                    y=df_death_flat["count"],
-                    color=df_death_flat["Country/Region"],
-                    title="Death")
+fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
+                                  y="diff", color="Country/Region")
+fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
+
+fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
+                                 color_discrete_sequence=["fuchsia"], zoom=0, height=300, size="count")
+fig_worldmap.update_layout(mapbox_style="open-street-map")
+fig_worldmap.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
 fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
-    z=byDateCountry["count"],
-    x=byDateCountry["Country/Region"],
-    y=byDateCountry["Date"],
+    z=df_byDateCountry["count"],
+    x=df_byDateCountry["Country/Region"],
+    y=df_byDateCountry["Date"],
     colorscale='Viridis'))
 
 
-fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
-
-
+# Configure Dash layout and load data
 external_stylesheets = [
     'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -136,13 +128,13 @@ app.layout = html.Div(className='container-fluid', children=[
     ]),
 
     html.Div(className='row', children=[
-        html.Div(className='col-sm-6', children=[
+        html.Div(className='col-xl-6', children=[
              dcc.Graph(
                  id='fig_byDateWorldWide',
                  figure=fig_byDateWorldWide
              ),
              ]),
-        html.Div(className='col-sm-6', children=[
+        html.Div(className='col-xl-6', children=[
             dcc.Graph(
                 id='fig_changesDiffTotal',
                 figure=fig_changesDiffTotal
@@ -150,13 +142,13 @@ app.layout = html.Div(className='container-fluid', children=[
         ]),
     ]),
     html.Div(className='row', children=[
-        html.Div(className='col-sm-4', children=[
+        html.Div(className='col-xl-4', children=[
             dcc.Graph(
                 id='fig_worldmap',
                 figure=fig_worldmap
             ),
         ]),
-        html.Div(className='col-sm-8', children=[
+        html.Div(className='col-xl-8', children=[
             dcc.Graph(
                 id='fig_confirmed_heatmap',
                 figure=fig_confirmed_heatmap
@@ -164,16 +156,16 @@ app.layout = html.Div(className='container-fluid', children=[
         ])
     ]),
     html.Div(className='row', children=[
-        html.Div(className='col-sm-6', children=[
+        html.Div(className='col-xl-6', children=[
             dcc.Graph(
                        id='fig_byDateWorldWidePct',
                        figure=fig_byDateWorldWidePct
             )
         ]),
-        html.Div(className='col-sm-6', children=[
+        html.Div(className='col-xl-6', children=[
             dcc.Graph(
-                id='fig_byDateCountry',
-                figure=fig_byDateCountry
+                id='fig_df_byDateCountry',
+                figure=fig_df_byDateCountry
             ),
         ]),
     ])
