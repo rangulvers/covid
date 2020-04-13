@@ -99,7 +99,7 @@ fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
 fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
 
 fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
-                                 color_discrete_sequence=["fuchsia"], zoom=0, height=300, size="count")
+                                 color_discrete_sequence=["fuchsia"], zoom=0, height=300)
 
 fig_worldmap.update_layout(mapbox_style="open-street-map")
 fig_worldmap.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
