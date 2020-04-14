@@ -66,7 +66,7 @@ df_dateCountryDiffTotal["diff"] = df_dateCountryDiffTotal['count'].diff()
 df_dateCountryDiffTotal = df_dateCountryDiffTotal.reset_index()
 filter_list = dfCombined.sort_values("count").tail(5)["Country/Region"]
 filter_list = filter_list.to_list()
-filter_list.append("China") 
+filter_list.append("China")
 df_dateCountryDiffTotal = df_dateCountryDiffTotal[df_dateCountryDiffTotal["Country/Region"].isin(
     filter_list)]
 df_byDateCountryTop5 = df_byDateCountry[df_byDateCountry["Country/Region"].isin(
@@ -96,8 +96,9 @@ fig_df_byDateCountry = px.line(x=df_byDateCountryTop5["Date"],
                                title="Confirmed Cases by Date")
 
 fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
-                                  y="diff", color="Country/Region")
+                                  y="diff", color="Country/Region", hover_name="Date", marginal_x="rug", marginal_y="histogram")
 fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
+
 
 fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
                                  color_discrete_sequence=["fuchsia"], zoom=0, height=300)
