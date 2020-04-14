@@ -66,6 +66,7 @@ df_dateCountryDiffTotal["diff"] = df_dateCountryDiffTotal['count'].diff()
 df_dateCountryDiffTotal = df_dateCountryDiffTotal.reset_index()
 filter_list = dfCombined.sort_values("count").tail(5)["Country/Region"]
 filter_list = filter_list.to_list()
+filter_list.append("China") 
 df_dateCountryDiffTotal = df_dateCountryDiffTotal[df_dateCountryDiffTotal["Country/Region"].isin(
     filter_list)]
 df_byDateCountryTop5 = df_byDateCountry[df_byDateCountry["Country/Region"].isin(
