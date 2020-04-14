@@ -129,15 +129,8 @@ app.layout = html.Div(className='container-fluid', children=[
             ### Diff to day before : {current_confirmend["diff"].tail(1).values[0]} ({current_confirmend["diff"].head(1).values[0]}) 
             ### PCT_Change : {current_confirmend["pct_change"].tail(1).values[0]} ({current_confirmend["pct_change"].head(1).values[0]})''')
     ]),
-
     html.Div(className='row', children=[
-        html.Div(className='col-xl-6', children=[
-             dcc.Graph(
-                 id='fig_byDateWorldWide',
-                 figure=fig_byDateWorldWide
-             ),
-             ]),
-        html.Div(className='col-xl-6', children=[
+        html.Div(className='col-xl-12', children=[
             dcc.Graph(
                 id='fig_changesDiffTotal',
                 figure=fig_changesDiffTotal
@@ -145,27 +138,39 @@ app.layout = html.Div(className='container-fluid', children=[
         ]),
     ]),
     html.Div(className='row', children=[
-        html.Div(className='col-xl-4', children=[
+        html.Div(className='col-xl-12', children=[
+            dcc.Graph(
+                id='fig_byDateWorldWide',
+                figure=fig_byDateWorldWide
+            ),
+        ]),
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-xl-12', children=[
             dcc.Graph(
                 id='fig_worldmap',
                 figure=fig_worldmap
             ),
         ]),
-        html.Div(className='col-xl-8', children=[
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-xl-12', children=[
             dcc.Graph(
                 id='fig_confirmed_heatmap',
                 figure=fig_confirmed_heatmap
             ),
-        ])
+        ]),
     ]),
     html.Div(className='row', children=[
-        html.Div(className='col-xl-6', children=[
+        html.Div(className='col-xl-12', children=[
             dcc.Graph(
-                       id='fig_byDateWorldWidePct',
-                       figure=fig_byDateWorldWidePct
-            )
+                id='fig_byDateWorldWidePct',
+                figure=fig_byDateWorldWidePct
+            ),
         ]),
-        html.Div(className='col-xl-6', children=[
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-xl-12', children=[
             dcc.Graph(
                 id='fig_df_byDateCountry',
                 figure=fig_df_byDateCountry
