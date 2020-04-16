@@ -87,6 +87,9 @@ fig_byDateWorldWidePct = px.line(x=byDateWorldWide["Date"],
                                  y=byDateWorldWide["pct_change"],
                                  title="PCT Change")
 
+fig_WorldWideChange = px.scatter(byDateWorldWide, x="count",
+                                 y="diff", marginal_x="rug", marginal_y="histogram")
+
 fig_byDateWorldWide.update_layout(yaxis_type="log")
 fig_byDateWorldWidePct.update_layout(yaxis_type="log")
 
@@ -132,16 +135,24 @@ app.layout = html.Div(className='container-fluid', children=[
     html.Div(className='row', children=[
         html.Div(className='col-xl-12', children=[
             dcc.Graph(
-                id='fig_changesDiffTotal',
-                figure=fig_changesDiffTotal
+                id='fig_byDateWorldWide',
+                figure=fig_byDateWorldWide
             ),
         ]),
     ]),
     html.Div(className='row', children=[
         html.Div(className='col-xl-12', children=[
             dcc.Graph(
-                id='fig_byDateWorldWide',
-                figure=fig_byDateWorldWide
+                id='fig_WorldWideChange',
+                figure=fig_WorldWideChange
+            ),
+        ]),
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-xl-12', children=[
+            dcc.Graph(
+                id='fig_changesDiffTotal',
+                figure=fig_changesDiffTotal
             ),
         ]),
     ]),
