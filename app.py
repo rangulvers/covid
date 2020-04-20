@@ -65,7 +65,8 @@ dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
 df_dateCountryDiffTotal = df_confirmed_flat.groupby(
     ["Country/Region", "Date"]).sum()
 df_dateCountryDiffTotal["diff"] = df_dateCountryDiffTotal['count'].diff()
-df_dateCountryDiffTotal["pct_change"] = df_dateCountryDiffTotal['count'].pct_change()
+df_dateCountryDiffTotal["pct_change"] = df_dateCountryDiffTotal['count'].pct_change(
+    periods=5)
 df_dateCountryDiffTotal["time2double"] = np.log(
     2) / np.log(1+df_dateCountryDiffTotal["pct_change"])
 df_dateCountryDiffTotal["time2double"] = df_dateCountryDiffTotal["time2double"].replace(
