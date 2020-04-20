@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-
+np.seterr(divide='ignore')
 # URLS
 url_con = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 urL_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
@@ -46,6 +46,8 @@ byDateWorldWide = df_byDateCountry.groupby("Date", as_index=False).sum()
 byDateWorldWide = byDateWorldWide.drop(columns=["Lat", "Long"])
 byDateWorldWide["pct_change"] = byDateWorldWide['count'].pct_change()
 byDateWorldWide["diff"] = byDateWorldWide['count'].diff()
+byDateWorldWide["time2double"] = np.log(
+    2) / np.log(1+byDateWorldWide["pct_change"])
 current_confirmend = byDateWorldWide.tail(2)
 # df_death_flat = df_death_flat.groupby(
 #     ["Date", "Country/Region"], as_index=False).sum()
@@ -63,10 +65,18 @@ dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
 df_dateCountryDiffTotal = df_confirmed_flat.groupby(
     ["Country/Region", "Date"]).sum()
 df_dateCountryDiffTotal["diff"] = df_dateCountryDiffTotal['count'].diff()
+df_dateCountryDiffTotal["pct_change"] = df_dateCountryDiffTotal['count'].pct_change()
+df_dateCountryDiffTotal["time2double"] = np.log(
+    2) / np.log(1+df_dateCountryDiffTotal["pct_change"])
+df_dateCountryDiffTotal["time2double"] = df_dateCountryDiffTotal["time2double"].replace(
+    [np.inf, -np.inf], np.nan)
+
 df_dateCountryDiffTotal = df_dateCountryDiffTotal.reset_index()
-filter_list = dfCombined.sort_values("count").tail(5)["Country/Region"]
+filter_list = dfCombined.sort_values("count", ascending=False).head(10)[
+    "Country/Region"]
 filter_list = filter_list.to_list()
-filter_list.append("China")
+if "China" not in filter_list:
+    filter_list.append("China")
 df_dateCountryDiffTotal = df_dateCountryDiffTotal[df_dateCountryDiffTotal["Country/Region"].isin(
     filter_list)]
 df_byDateCountryTop5 = df_byDateCountry[df_byDateCountry["Country/Region"].isin(
@@ -83,6 +93,10 @@ fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
                             y=byDateWorldWide["diff"],
                             name="Diff by Date")
 
+fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
+                                y=byDateWorldWide["time2double"],
+                                name="time2double")
+
 fig_byDateWorldWidePct = px.line(x=byDateWorldWide["Date"],
                                  y=byDateWorldWide["pct_change"],
                                  title="PCT Change")
@@ -97,6 +111,12 @@ fig_df_byDateCountry = px.line(x=df_byDateCountryTop5["Date"],
                                y=df_byDateCountryTop5["count"],
                                color=df_byDateCountryTop5["Country/Region"],
                                title="Confirmed Cases by Date")
+
+fig_byDateCountryTime2Double = px.line(x=df_dateCountryDiffTotal["Date"],
+                                       y=df_dateCountryDiffTotal["time2double"],
+                                       color=df_dateCountryDiffTotal["Country/Region"],
+                                       title="Time 2 Double")
+
 
 fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
                                   y="diff", color="Country/Region", hover_name="Date", marginal_x="rug", marginal_y="histogram")
@@ -185,6 +205,14 @@ app.layout = html.Div(className='container-fluid', children=[
             dcc.Graph(
                 id='fig_df_byDateCountry',
                 figure=fig_df_byDateCountry
+            ),
+        ]),
+    ]),
+    html.Div(className='row', children=[
+        html.Div(className='col-xl-12', children=[
+            dcc.Graph(
+                id='fig_byDateCountryTime2Double',
+                figure=fig_byDateCountryTime2Double
             ),
         ]),
     ])

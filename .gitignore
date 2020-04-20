@@ -1,3 +1,5 @@
 /.venv/*
 /.vscode/*
 /_pycache_/*
+*.ipynb
+/.ipynb_checkpoints/*
