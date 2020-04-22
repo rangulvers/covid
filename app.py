@@ -169,36 +169,63 @@ app.layout = html.Div(className='container-fluid', children=[
     html.Div(className='jumbotron', children=[
         dcc.Markdown(f'''
         # COVID-19 Dashboard
-        All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})'''),
-        dcc.Markdown(
-            f'''
-            # Total Cases :  {current_confirmend["count"].tail(1).values[0]} ({current_confirmend["count"].head(1).values[0]})
-            # Diff to day before : {current_confirmend["diff"].tail(1).values[0]} ({current_confirmend["diff"].head(1).values[0]})
-            # PCT_Change : {current_confirmend["pct_change"].tail(1).values[0]} ({current_confirmend["pct_change"].head(1).values[0]})''')
+        All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})''')
     ]),
-    dbc.Progress(
+
+
+    dbc.Row(
         [
-            dbc.Progress(value=current_confirmend["count"].tail(
-                1).values[0], color="success", bar=True),
-            dbc.Progress(value=current_confirmend["recoverd_count"].tail(
-                1).values[0], color="warning", bar=True),
-            dbc.Progress(value=current_confirmend["death_count"].tail(
-                1).values[0], color="danger", bar=True),
-        ],
-        multi=True,
+            dbc.Col(dbc.Card([
+                dbc.CardHeader("Confirmed Cases"),
+                dbc.CardBody(
+                    [
+                        html.H5(current_confirmend["count"].tail(
+                            1).values[0], className="card-title"),
+                        html.P(
+                            f"This is a change of {current_confirmend['diff'].tail(1).values[0]} or {current_confirmend['pct_change'].tail(1).values[0]} (PCT_CHANGE) to yesterday")
+                    ]
+                )], color="warning", inverse=True
+            )),
+            dbc.Col(dbc.Card([
+                dbc.CardHeader("Recoverd Cases"),
+                dbc.CardBody(
+                    [
+                        html.H5(current_confirmend["recoverd_count"].tail(
+                            1).values[0], className="card-title")
+                    ]
+                )], color="success", inverse=True
+            )),        dbc.Col(dbc.Card([
+                dbc.CardHeader("Death Cases"),
+                dbc.CardBody(
+                    [
+                        html.H5(current_confirmend["death_count"].tail(
+                                1).values[0], className="card-title")
+                    ]
+                )], color="dark", inverse=True
+            ))
+        ]
     ),
-    # html.Div(className="progress", children=[
-    #     html.Div(className='progress-bar', aria-*="", style={'with': "15%"}),
-    #     html.Div(className='progress-bar bg-success'),
-    #     html.Div(className='progress-bar bg-info'),
+    dbc.Row(
+        dbc.Col([
+            dbc.Progress(
+                [
+                    dbc.Progress(current_confirmend["count"].tail(
+                        1).values[0], value=100, color="warning", bar=True),
+                    dbc.Progress(current_confirmend["recoverd_count"].tail(
+                        1).values[0], value=(current_confirmend["recoverd_count"].tail(
+                            1).values[0] / current_confirmend["count"].tail(
+                            1).values[0])*100, color="success", bar=True),
+                    dbc.Progress(current_confirmend["death_count"].tail(
+                        1).values[0], value=(current_confirmend["death_count"].tail(
+                            1).values[0] / current_confirmend["count"].tail(
+                            1).values[0])*100, color="dark", bar=True),
+                ],
+                multi=True,
+            )
+        ])
+    ),
 
-    # ]),
-
-    # < div class="progress" >
-    # < div class="progress-bar" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100" > </div >
-    # < div class="progress-bar bg-success" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" > </div >
-    # < div class="progress-bar bg-info" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" > </div >
-    # < / div >
+    # TODO : Change all layouts to DBC Components https://dash-bootstrap-components.opensource.faculty.ai/docs/components/progress/
 
     html.Div(className='row', children=[
         html.Div(className='col-xl-12', children=[
