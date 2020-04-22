@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 np.seterr(divide='ignore')
 # URLS
 url_con = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
@@ -33,9 +34,22 @@ df_recoverd_flat = df_recoverd_flat[(
 
 # Change Dateformat of Date Column
 df_confirmed_flat["Date"] = pd.to_datetime(df_confirmed_flat["Date"])
-# df_death_flat["Date"] = pd.to_datetime(df_death_flat["Date"])
-# df_recoverd_flat["Date"] = pd.to_datetime(df_recoverd_flat["Date"])
-# df_death_flat = df_death_flat.drop(columns=["Province/State", "Lat", "Long"])
+df_death_flat["Date"] = pd.to_datetime(df_death_flat["Date"])
+df_recoverd_flat["Date"] = pd.to_datetime(df_recoverd_flat["Date"])
+
+df_death_flat = df_death_flat.drop(columns=["Lat", "Long"])
+df_recoverd_flat = df_recoverd_flat.drop(
+    columns=["Lat", "Long"])
+
+df_death_flat = df_death_flat.rename(columns={"count": "death_count"})
+df_recoverd_flat = df_recoverd_flat.rename(
+    columns={"count": "recoverd_count"})
+
+df_confirmed_flat = pd.merge(df_confirmed_flat, df_recoverd_flat, how="outer", on=[
+                             "Province/State", "Country/Region", "Date"])
+df_confirmed_flat = pd.merge(df_confirmed_flat, df_death_flat, how="outer", on=[
+                             "Province/State", "Country/Region", "Date"])
+
 
 # Confirmed Cases prep step
 df_byDateCountry = df_confirmed_flat.groupby(
@@ -87,6 +101,14 @@ df_byDateCountryTop5 = df_byDateCountry[df_byDateCountry["Country/Region"].isin(
 # Setup Charts
 fig_byDateWorldWide = px.scatter()
 fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
+                                y=byDateWorldWide["recoverd_count"],
+                                name="Confirmed Recovered World Wide")
+
+fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
+                                y=byDateWorldWide["death_count"],
+                                name="Confirmed Death World Wide")
+
+fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
                                 y=byDateWorldWide["count"],
                                 name="Confirmed Cases World Wide")
 
@@ -107,6 +129,7 @@ fig_WorldWideChange = px.scatter(byDateWorldWide, x="count",
 
 fig_byDateWorldWide.update_layout(yaxis_type="log")
 fig_byDateWorldWidePct.update_layout(yaxis_type="log")
+
 
 fig_df_byDateCountry = px.line(x=df_byDateCountryTop5["Date"],
                                y=df_byDateCountryTop5["count"],
@@ -139,7 +162,7 @@ fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
 # Configure Dash layout and load data
 external_stylesheets = [
     'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 app.layout = html.Div(className='container-fluid', children=[
 
@@ -149,10 +172,34 @@ app.layout = html.Div(className='container-fluid', children=[
         All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})'''),
         dcc.Markdown(
             f'''
-            ### Total Cases :  {current_confirmend["count"].tail(1).values[0]} ({current_confirmend["count"].head(1).values[0]})
-            ### Diff to day before : {current_confirmend["diff"].tail(1).values[0]} ({current_confirmend["diff"].head(1).values[0]}) 
-            ### PCT_Change : {current_confirmend["pct_change"].tail(1).values[0]} ({current_confirmend["pct_change"].head(1).values[0]})''')
+            # Total Cases :  {current_confirmend["count"].tail(1).values[0]} ({current_confirmend["count"].head(1).values[0]})
+            # Diff to day before : {current_confirmend["diff"].tail(1).values[0]} ({current_confirmend["diff"].head(1).values[0]})
+            # PCT_Change : {current_confirmend["pct_change"].tail(1).values[0]} ({current_confirmend["pct_change"].head(1).values[0]})''')
     ]),
+    dbc.Progress(
+        [
+            dbc.Progress(value=current_confirmend["count"].tail(
+                1).values[0], color="success", bar=True),
+            dbc.Progress(value=current_confirmend["recoverd_count"].tail(
+                1).values[0], color="warning", bar=True),
+            dbc.Progress(value=current_confirmend["death_count"].tail(
+                1).values[0], color="danger", bar=True),
+        ],
+        multi=True,
+    ),
+    # html.Div(className="progress", children=[
+    #     html.Div(className='progress-bar', aria-*="", style={'with': "15%"}),
+    #     html.Div(className='progress-bar bg-success'),
+    #     html.Div(className='progress-bar bg-info'),
+
+    # ]),
+
+    # < div class="progress" >
+    # < div class="progress-bar" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100" > </div >
+    # < div class="progress-bar bg-success" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" > </div >
+    # < div class="progress-bar bg-info" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" > </div >
+    # < / div >
+
     html.Div(className='row', children=[
         html.Div(className='col-xl-12', children=[
             dcc.Graph(
