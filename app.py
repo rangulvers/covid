@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 np.seterr(divide='ignore')
 # URLS
 url_con = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
@@ -33,9 +34,22 @@ df_recoverd_flat = df_recoverd_flat[(
 
 # Change Dateformat of Date Column
 df_confirmed_flat["Date"] = pd.to_datetime(df_confirmed_flat["Date"])
-# df_death_flat["Date"] = pd.to_datetime(df_death_flat["Date"])
-# df_recoverd_flat["Date"] = pd.to_datetime(df_recoverd_flat["Date"])
-# df_death_flat = df_death_flat.drop(columns=["Province/State", "Lat", "Long"])
+df_death_flat["Date"] = pd.to_datetime(df_death_flat["Date"])
+df_recoverd_flat["Date"] = pd.to_datetime(df_recoverd_flat["Date"])
+
+df_death_flat = df_death_flat.drop(columns=["Lat", "Long"])
+df_recoverd_flat = df_recoverd_flat.drop(
+    columns=["Lat", "Long"])
+
+df_death_flat = df_death_flat.rename(columns={"count": "death_count"})
+df_recoverd_flat = df_recoverd_flat.rename(
+    columns={"count": "recoverd_count"})
+
+df_confirmed_flat = pd.merge(df_confirmed_flat, df_recoverd_flat, how="outer", on=[
+                             "Province/State", "Country/Region", "Date"])
+df_confirmed_flat = pd.merge(df_confirmed_flat, df_death_flat, how="outer", on=[
+                             "Province/State", "Country/Region", "Date"])
+
 
 # Confirmed Cases prep step
 df_byDateCountry = df_confirmed_flat.groupby(
@@ -46,8 +60,16 @@ byDateWorldWide = df_byDateCountry.groupby("Date", as_index=False).sum()
 byDateWorldWide = byDateWorldWide.drop(columns=["Lat", "Long"])
 byDateWorldWide["pct_change"] = byDateWorldWide['count'].pct_change()
 byDateWorldWide["diff"] = byDateWorldWide['count'].diff()
+byDateWorldWide["death_pct_change"] = byDateWorldWide['death_count'].pct_change()
+byDateWorldWide["deaeth_diff"] = byDateWorldWide['death_count'].diff()
+byDateWorldWide["recoverd_pct_change"] = byDateWorldWide['recoverd_count'].pct_change()
+byDateWorldWide["recoverd_diff"] = byDateWorldWide['recoverd_count'].diff()
 byDateWorldWide["time2double"] = np.log(
     2) / np.log(1+byDateWorldWide["pct_change"])
+byDateWorldWide["death_time2double"] = np.log(
+    2) / np.log(1+byDateWorldWide["death_pct_change"])
+byDateWorldWide["recoverd_time2double"] = np.log(
+    2) / np.log(1+byDateWorldWide["recoverd_pct_change"])
 current_confirmend = byDateWorldWide.tail(2)
 # df_death_flat = df_death_flat.groupby(
 #     ["Date", "Country/Region"], as_index=False).sum()
@@ -65,8 +87,7 @@ dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
 df_dateCountryDiffTotal = df_confirmed_flat.groupby(
     ["Country/Region", "Date"]).sum()
 df_dateCountryDiffTotal["diff"] = df_dateCountryDiffTotal['count'].diff()
-df_dateCountryDiffTotal["pct_change"] = df_dateCountryDiffTotal['count'].pct_change(
-    periods=5)
+df_dateCountryDiffTotal["pct_change"] = df_dateCountryDiffTotal['count'].pct_change()
 df_dateCountryDiffTotal["time2double"] = np.log(
     2) / np.log(1+df_dateCountryDiffTotal["pct_change"])
 df_dateCountryDiffTotal["time2double"] = df_dateCountryDiffTotal["time2double"].replace(
@@ -85,42 +106,47 @@ df_byDateCountryTop5 = df_byDateCountry[df_byDateCountry["Country/Region"].isin(
 
 
 # Setup Charts
-fig_byDateWorldWide = px.scatter()
+fig_byDateWorldWide = px.scatter(title="Global Overview")
+
+fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
+                                y=byDateWorldWide["death_count"],
+                                name="Confirmed death World Wide")
+fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
+                                y=byDateWorldWide["recoverd_count"],
+                                name="Confirmed Recovered World Wide")
 fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
                                 y=byDateWorldWide["count"],
                                 name="Confirmed Cases World Wide")
 
 fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
-                            y=byDateWorldWide["diff"],
-                            name="Diff by Date")
+                            y=byDateWorldWide["time2double"],
+                            name="Time 2 Double")
+fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
+                            y=byDateWorldWide["death_time2double"],
+                            name="Death Time 2 Double")
+fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
+                            y=byDateWorldWide["recoverd_time2double"],
+                            name="recoverd Time 2 Double")
 
-fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
-                                y=byDateWorldWide["time2double"],
-                                name="time2double")
 
 fig_byDateWorldWidePct = px.line(x=byDateWorldWide["Date"],
                                  y=byDateWorldWide["pct_change"],
-                                 title="PCT Change")
+                                 title="% Change by Date")
 
 fig_WorldWideChange = px.scatter(byDateWorldWide, x="count",
-                                 y="diff", marginal_x="rug", marginal_y="histogram")
+                                 y="diff", marginal_x="rug", marginal_y="histogram", title="Change cases by date")
 
 fig_byDateWorldWide.update_layout(yaxis_type="log")
 fig_byDateWorldWidePct.update_layout(yaxis_type="log")
 
+
 fig_df_byDateCountry = px.line(x=df_byDateCountryTop5["Date"],
                                y=df_byDateCountryTop5["count"],
                                color=df_byDateCountryTop5["Country/Region"],
-                               title="Confirmed Cases by Date")
-
-fig_byDateCountryTime2Double = px.line(x=df_dateCountryDiffTotal["Date"],
-                                       y=df_dateCountryDiffTotal["time2double"],
-                                       color=df_dateCountryDiffTotal["Country/Region"],
-                                       title="Time 2 Double")
-
+                               title="Confirmed Cases by Date and Country")
 
 fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
-                                  y="diff", color="Country/Region", hover_name="Date", marginal_x="rug", marginal_y="histogram")
+                                  y="diff", color="Country/Region", hover_name="Date", marginal_x="rug", marginal_y="histogram",  title="Total Cases and Diff by Date")
 fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
 
 
@@ -139,7 +165,7 @@ fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
 # Configure Dash layout and load data
 external_stylesheets = [
     'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 app.layout = html.Div(className='container-fluid', children=[
 
@@ -147,76 +173,175 @@ app.layout = html.Div(className='container-fluid', children=[
         dcc.Markdown(f'''
         # COVID-19 Dashboard
         All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})'''),
-        dcc.Markdown(
-            f'''
-            ### Total Cases :  {current_confirmend["count"].tail(1).values[0]} ({current_confirmend["count"].head(1).values[0]})
-            ### Diff to day before : {current_confirmend["diff"].tail(1).values[0]} ({current_confirmend["diff"].head(1).values[0]}) 
-            ### PCT_Change : {current_confirmend["pct_change"].tail(1).values[0]} ({current_confirmend["pct_change"].head(1).values[0]})''')
+        dbc.Progress(
+            [
+                dbc.Progress(current_confirmend["count"].tail(
+                    1).values[0], value=100, color="warning", bar=True),
+                dbc.Progress(current_confirmend["recoverd_count"].tail(
+                    1).values[0], value=(current_confirmend["recoverd_count"].tail(
+                        1).values[0] / current_confirmend["count"].tail(
+                        1).values[0])*100, color="success", bar=True),
+                dbc.Progress(current_confirmend["death_count"].tail(
+                    1).values[0], value=(current_confirmend["death_count"].tail(
+                        1).values[0] / current_confirmend["count"].tail(
+                        1).values[0])*100, color="dark", bar=True),
+            ],
+            multi=True,
+        )
     ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
+
+
+    dbc.Row(
+        [
+
+            dbc.Col([
+                dcc.Graph(
+                    id='fig_worldmap',
+                    figure=fig_worldmap
+                )
+            ]),
+
+            dbc.Col(dbc.Card([
+                dbc.CardHeader("Confirmed Cases"),
+                dbc.CardBody(
+                    [
+                        html.H5(current_confirmend["count"].tail(
+                            1).values[0], className="card-title"),
+                        html.P(
+                            f"This is a change of {current_confirmend['diff'].tail(1).values[0]} or {current_confirmend['pct_change'].tail(1).values[0]} (PCT_CHANGE) to yesterday")
+                    ]
+                )], color="warning", inverse=True
+            )),
+            dbc.Col(dbc.Card([
+                dbc.CardHeader("Recoverd Cases"),
+                dbc.CardBody(
+                    [
+                        html.H5(current_confirmend["recoverd_count"].tail(
+                            1).values[0], className="card-title")
+                    ]
+                )], color="success", inverse=True
+            )),        dbc.Col(dbc.Card([
+                dbc.CardHeader("Death Cases"),
+                dbc.CardBody(
+                    [
+                        html.H5(current_confirmend["death_count"].tail(
+                                1).values[0], className="card-title")
+                    ]
+                )], color="dark", inverse=True
+            ))
+        ]
+    ),
+    dbc.Row(
+        dbc.Col([
+        ])
+    ),
+
+    dbc.Row(
+        dbc.Col([
             dcc.Graph(
                 id='fig_byDateWorldWide',
                 figure=fig_byDateWorldWide
             ),
-        ]),
-    ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
+        ])
+    ),
+
+    dbc.Row(
+        dbc.Col([
             dcc.Graph(
                 id='fig_WorldWideChange',
                 figure=fig_WorldWideChange
-            ),
-        ]),
-    ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
+            )
+        ])
+    ),
+    dbc.Row(
+        dbc.Col([
             dcc.Graph(
                 id='fig_changesDiffTotal',
                 figure=fig_changesDiffTotal
-            ),
-        ]),
-    ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
-            dcc.Graph(
-                id='fig_worldmap',
-                figure=fig_worldmap
-            ),
-        ]),
-    ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
+            )
+        ])
+    ),
+
+    dbc.Row(
+        dbc.Col([
             dcc.Graph(
                 id='fig_confirmed_heatmap',
                 figure=fig_confirmed_heatmap
             ),
-        ]),
-    ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
+        ])
+    ),
+    dbc.Row(
+        dbc.Col([
             dcc.Graph(
                 id='fig_byDateWorldWidePct',
                 figure=fig_byDateWorldWidePct
-            ),
-        ]),
-    ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
+            )
+        ])
+    ),
+    dbc.Row(
+        dbc.Col([
             dcc.Graph(
                 id='fig_df_byDateCountry',
                 figure=fig_df_byDateCountry
             ),
-        ]),
-    ]),
-    html.Div(className='row', children=[
-        html.Div(className='col-xl-12', children=[
-            dcc.Graph(
-                id='fig_byDateCountryTime2Double',
-                figure=fig_byDateCountryTime2Double
-            ),
-        ]),
-    ])
+        ])
+    ),
+    # html.Div(className='row', children=[
+    #     html.Div(className='col-xl-12', children=[
+    #         dcc.Graph(
+    #             id='fig_byDateWorldWide',
+    #             figure=fig_byDateWorldWide
+    #         ),
+    #     ]),
+    # ]),
+    # html.Div(className='row', children=[
+    #     html.Div(className='col-xl-12', children=[
+    #         dcc.Graph(
+    #             id='fig_WorldWideChange',
+    #             figure=fig_WorldWideChange
+    #         ),
+    #     ]),
+    # ]),
+    # html.Div(className='row', children=[
+    #     html.Div(className='col-xl-12', children=[
+    #         dcc.Graph(
+    #             id='fig_changesDiffTotal',
+    #             figure=fig_changesDiffTotal
+    #         ),
+    #     ]),
+    # ]),
+    # html.Div(className='row', children=[
+    #     html.Div(className='col-xl-12', children=[
+    #         dcc.Graph(
+    #             id='fig_worldmap',
+    #             figure=fig_worldmap
+    #         ),
+    #     ]),
+    # ]),
+    # html.Div(className='row', children=[
+    #     html.Div(className='col-xl-12', children=[
+    #         dcc.Graph(
+    #             id='fig_confirmed_heatmap',
+    #             figure=fig_confirmed_heatmap
+    #         ),
+    #     ]),
+    # ]),
+    # html.Div(className='row', children=[
+    #     html.Div(className='col-xl-12', children=[
+    #         dcc.Graph(
+    #             id='fig_byDateWorldWidePct',
+    #             figure=fig_byDateWorldWidePct
+    #         ),
+    #     ]),
+    # ]),
+    # html.Div(className='row', children=[
+    #     html.Div(className='col-xl-12', children=[
+    #         dcc.Graph(
+    #             id='fig_df_byDateCountry',
+    #             figure=fig_df_byDateCountry
+    #         ),
+    #     ]),
+    # ])
 ])
 
 if __name__ == '__main__':
