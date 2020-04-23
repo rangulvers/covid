@@ -10,10 +10,7 @@ The [dashboard](https://warm-wildwood-76568.herokuapp.com/) is deployed as an He
 
 
 # Open Topics
-TODO Cleanup data download and implement a global buffer
-TODO Include Country Population into Datasets
-TODO Move Chart generation into own class
-TODO Move data manipulation into own class
-
-
-  
+TODO #4 Cleanup data download and implement a global buffer
+TODO #5 Include Country Population into Datasets
+TODO #6 Move Chart generation into own class
+TODO #7 Move data manipulation into own class
