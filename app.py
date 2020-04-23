@@ -1,12 +1,12 @@
-import numpy as np  # linear algebra
-import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-np.seterr(divide='ignore')
+
 # URLS
 url_con = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv"
 urL_death = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv"
@@ -71,9 +71,6 @@ byDateWorldWide["death_time2double"] = np.log(
 byDateWorldWide["recoverd_time2double"] = np.log(
     2) / np.log(1+byDateWorldWide["recoverd_pct_change"])
 current_confirmend = byDateWorldWide.tail(2)
-# df_death_flat = df_death_flat.groupby(
-#     ["Date", "Country/Region"], as_index=False).sum()
-
 
 # Create DataSet for Combined World Chart Map
 # take the first columns for country, province, lat and lon
@@ -162,9 +159,7 @@ fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
     y=df_byDateCountry["Date"],
     colorscale='Viridis'))
 
-# Configure Dash layout and load data
-external_stylesheets = [
-    'https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css']
+# Configure Dash layout
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 app.layout = html.Div(className='container-fluid', children=[
@@ -172,7 +167,7 @@ app.layout = html.Div(className='container-fluid', children=[
     html.Div(className='jumbotron', children=[
         dcc.Markdown(f'''
         # COVID-19 Dashboard
-        All information is pulled from the Johns Hopkins University Github Page [links](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})'''),
+        All information is pulled from the Johns Hopkins University [Github Page](https://www.github.com/CSSEGISandData) ({current_confirmend["Date"].values[0]})'''),
         dbc.Progress(
             [
                 dbc.Progress(current_confirmend["count"].tail(
@@ -190,7 +185,6 @@ app.layout = html.Div(className='container-fluid', children=[
         )
     ]),
 
-
     dbc.Row(
         [
 
@@ -202,7 +196,7 @@ app.layout = html.Div(className='container-fluid', children=[
             ]),
 
             dbc.Col(dbc.Card([
-                dbc.CardHeader("Confirmed Cases"),
+                dbc.CardHeader("Confirmed"),
                 dbc.CardBody(
                     [
                         html.H5(current_confirmend["count"].tail(
@@ -213,7 +207,7 @@ app.layout = html.Div(className='container-fluid', children=[
                 )], color="warning", inverse=True
             )),
             dbc.Col(dbc.Card([
-                dbc.CardHeader("Recoverd Cases"),
+                dbc.CardHeader("Recoverd"),
                 dbc.CardBody(
                     [
                         html.H5(current_confirmend["recoverd_count"].tail(
@@ -221,7 +215,7 @@ app.layout = html.Div(className='container-fluid', children=[
                     ]
                 )], color="success", inverse=True
             )),        dbc.Col(dbc.Card([
-                dbc.CardHeader("Death Cases"),
+                dbc.CardHeader("Death"),
                 dbc.CardBody(
                     [
                         html.H5(current_confirmend["death_count"].tail(
@@ -286,63 +280,7 @@ app.layout = html.Div(className='container-fluid', children=[
             ),
         ])
     ),
-    # html.Div(className='row', children=[
-    #     html.Div(className='col-xl-12', children=[
-    #         dcc.Graph(
-    #             id='fig_byDateWorldWide',
-    #             figure=fig_byDateWorldWide
-    #         ),
-    #     ]),
-    # ]),
-    # html.Div(className='row', children=[
-    #     html.Div(className='col-xl-12', children=[
-    #         dcc.Graph(
-    #             id='fig_WorldWideChange',
-    #             figure=fig_WorldWideChange
-    #         ),
-    #     ]),
-    # ]),
-    # html.Div(className='row', children=[
-    #     html.Div(className='col-xl-12', children=[
-    #         dcc.Graph(
-    #             id='fig_changesDiffTotal',
-    #             figure=fig_changesDiffTotal
-    #         ),
-    #     ]),
-    # ]),
-    # html.Div(className='row', children=[
-    #     html.Div(className='col-xl-12', children=[
-    #         dcc.Graph(
-    #             id='fig_worldmap',
-    #             figure=fig_worldmap
-    #         ),
-    #     ]),
-    # ]),
-    # html.Div(className='row', children=[
-    #     html.Div(className='col-xl-12', children=[
-    #         dcc.Graph(
-    #             id='fig_confirmed_heatmap',
-    #             figure=fig_confirmed_heatmap
-    #         ),
-    #     ]),
-    # ]),
-    # html.Div(className='row', children=[
-    #     html.Div(className='col-xl-12', children=[
-    #         dcc.Graph(
-    #             id='fig_byDateWorldWidePct',
-    #             figure=fig_byDateWorldWidePct
-    #         ),
-    #     ]),
-    # ]),
-    # html.Div(className='row', children=[
-    #     html.Div(className='col-xl-12', children=[
-    #         dcc.Graph(
-    #             id='fig_df_byDateCountry',
-    #             figure=fig_df_byDateCountry
-    #         ),
-    #     ]),
-    # ])
 ])
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
