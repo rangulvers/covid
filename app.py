@@ -18,6 +18,9 @@ df_confirmed = pd.read_csv(url_con, error_bad_lines=False)
 df_death = pd.read_csv(urL_death, error_bad_lines=False)
 df_recovered = pd.read_csv(url_recover, error_bad_lines=False)
 
+df_confirmed.iloc[:, 4:] = df_confirmed.iloc[:, 4:].clip(lower=0)
+
+df_death.iloc[:, 4:] = df_death.iloc[:, 4:].clip(lower=0)
 
 # Flatten Datasets to fit charts
 df_confirmed_flat = df_confirmed.melt(var_name="Date", value_name="count", id_vars=[
@@ -28,20 +31,17 @@ df_recoverd_flat = df_recovered.melt(var_name="Date", value_name="count", id_var
                                      "Province/State", "Country/Region", "Lat", "Long"])
 
 # Fix -1 and 0 values
-df_confirmed_flat = df_confirmed_flat[(
-    df_confirmed_flat[['count']] > 0).all(axis=1)]
-df_death_flat = df_death_flat[(df_death_flat[['count']] > 0).all(axis=1)]
-df_recoverd_flat = df_recoverd_flat[(
-    df_recoverd_flat[['count']] > 0).all(axis=1)]
+# df_confirmed_flat = df_confirmed_flat[(
+#     df_confirmed_flat[['count']] > 0).all(axis=1)]
+# df_death_flat = df_death_flat[(df_death_flat[['count']] > 0).all(axis=1)]
+# df_recoverd_flat = df_recoverd_flat[(
+#     df_recoverd_flat[['count']] > 0).all(axis=1)]
 
 # Change Dateformat of Date Column
 df_confirmed_flat["Date"] = pd.to_datetime(df_confirmed_flat["Date"])
 df_death_flat["Date"] = pd.to_datetime(df_death_flat["Date"])
 df_recoverd_flat["Date"] = pd.to_datetime(df_recoverd_flat["Date"])
 
-df_death_flat = df_death_flat.drop(columns=["Lat", "Long"])
-df_recoverd_flat = df_recoverd_flat.drop(
-    columns=["Lat", "Long"])
 
 df_death_flat = df_death_flat.rename(columns={"count": "death_count"})
 df_recoverd_flat = df_recoverd_flat.rename(
@@ -158,22 +158,55 @@ fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
                                   y="diff", color="Country/Region", hover_name="Date", marginal_x="rug", marginal_y="histogram",  title="Total Cases and Diff by Date")
 fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
 
+fig_worldmap = go.Figure()
 
-fig_worldmap = px.scatter_mapbox(df_confirmed_wordmap, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
-                                 zoom=0, height=300, size="count", color="count", color_continuous_scale=px.colors.sequential.Agsunset)
-# fig_worldmap.add_scattermapbox(df_death_worldmap, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
-#                                color_discrete_sequence=["fuchsia"], zoom=0, height=300)
-# fig_worldmap.add_scattermapbox(df_recoverd_worldmap, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
-#                                color_discrete_sequence=["fuchsia"], zoom=0, height=300)
+fig_worldmap.add_trace(go.Scattermapbox(lat=df_confirmed_wordmap["Lat"],
+                                        lon=df_confirmed_wordmap["Long"],
+                                        name="Confirmed",
+                                        hovertext=df_confirmed_wordmap["count"],
+                                        marker=go.scattermapbox.Marker(
+                                            color="red",
+                                            opacity=0.7,
+                                            size=df_confirmed_wordmap["count"],
+                                            sizeref=9000),
 
-fig_worldmap.update_layout(mapbox_style="open-street-map")
-fig_worldmap.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+                                        ))
+
+fig_worldmap.add_trace(go.Scattermapbox(lat=df_recoverd_worldmap["Lat"],
+                                        lon=df_recoverd_worldmap["Long"],
+                                        name="Recoverd",
+                                        hovertext=df_recoverd_worldmap["count"],
+                                        marker=go.scattermapbox.Marker(
+                                            color="green",
+                                            opacity=0.7,
+                                            size=df_recoverd_worldmap["count"],
+                                            sizeref=9000),
+                                        ))
+
+
+fig_worldmap.add_trace(go.Scattermapbox(lat=df_death_worldmap["Lat"],
+                                        lon=df_death_worldmap["Long"],
+                                        name="Death",
+                                        hovertext=df_death_worldmap["count"],
+                                        marker=go.scattermapbox.Marker(
+                                            color="black",
+                                            opacity=0.7,
+                                            size=df_death_worldmap["count"],
+                                            sizeref=9000),
+                                        ))
+
+fig_worldmap.update_layout(mapbox_style="open-street-map",
+                           margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                           title='Nuclear Waste Sites on Campus',
+                           autosize=False,
+                           showlegend=True)
+
 
 fig_confirmed_heatmap = go.Figure(data=go.Heatmap(
     z=df_byDateCountry["count"],
     x=df_byDateCountry["Country/Region"],
     y=df_byDateCountry["Date"],
-    colorscale='Viridis'))
+    colorscale=px.colors.sequential.Agsunset))
 
 # Configure Dash layout
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
