@@ -18,6 +18,7 @@ df_confirmed = pd.read_csv(url_con, error_bad_lines=False)
 df_death = pd.read_csv(urL_death, error_bad_lines=False)
 df_recovered = pd.read_csv(url_recover, error_bad_lines=False)
 
+
 # Flatten Datasets to fit charts
 df_confirmed_flat = df_confirmed.melt(var_name="Date", value_name="count", id_vars=[
                                       "Province/State", "Country/Region", "Lat", "Long"])
@@ -75,11 +76,21 @@ current_confirmend = byDateWorldWide.tail(2)
 
 # Create DataSet for Combined World Chart Map
 # take the first columns for country, province, lat and lon
-df_global = df_confirmed.iloc[:, :4]
-df_global_1 = df_confirmed.iloc[:, -1]  # take last column for latest data
-dfCombined = pd.concat([df_global, df_global_1], axis=1, sort=False)
-dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
+# dfc = df_confirmed.iloc[:, :4]
+# df_global_1 = df_confirmed.iloc[:, -1]  # take last column for latest data
+# dfCombined = pd.concat([df_global, df_global_1], axis=1, sort=False)
+# dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
+df_confirmed_wordmap = df_confirmed.iloc[:, [0, 1, 2, 3, -1]]
+df_confirmed_wordmap.set_axis(
+    [*df_confirmed_wordmap.columns[:-1], 'count'], axis=1, inplace=True)
 
+df_death_worldmap = df_death.iloc[:, [0, 1, 2, 3, -1]]
+df_death_worldmap.set_axis(
+    [*df_death_worldmap.columns[:-1], 'count'], axis=1, inplace=True)
+
+df_recoverd_worldmap = df_recovered.iloc[:, [0, 1, 2, 3, -1]]
+df_recoverd_worldmap.set_axis(
+    [*df_recoverd_worldmap.columns[:-1], 'count'], axis=1, inplace=True)
 
 # Create Dateset to compare Total Cases vs Diff for the top 5 Coutries
 df_dateCountryDiffTotal = df_confirmed_flat.groupby(
@@ -92,7 +103,7 @@ df_dateCountryDiffTotal["time2double"] = df_dateCountryDiffTotal["time2double"].
     [np.inf, -np.inf], np.nan)
 
 df_dateCountryDiffTotal = df_dateCountryDiffTotal.reset_index()
-filter_list = dfCombined.sort_values("count", ascending=False).head(10)[
+filter_list = df_confirmed_wordmap.sort_values("count", ascending=False).head(10)[
     "Country/Region"]
 filter_list = filter_list.to_list()
 if "China" not in filter_list:
@@ -148,8 +159,12 @@ fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
 fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
 
 
-fig_worldmap = px.scatter_mapbox(dfCombined, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
-                                 color_discrete_sequence=["fuchsia"], zoom=0, height=300)
+fig_worldmap = px.scatter_mapbox(df_confirmed_wordmap, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
+                                 zoom=0, height=300, size="count", color="count", color_continuous_scale=px.colors.sequential.Agsunset)
+# fig_worldmap.add_scattermapbox(df_death_worldmap, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
+#                                color_discrete_sequence=["fuchsia"], zoom=0, height=300)
+# fig_worldmap.add_scattermapbox(df_recoverd_worldmap, lat="Lat", lon="Long", hover_name="Country/Region", hover_data=["count"],
+#                                color_discrete_sequence=["fuchsia"], zoom=0, height=300)
 
 fig_worldmap.update_layout(mapbox_style="open-street-map")
 fig_worldmap.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
