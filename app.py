@@ -80,9 +80,9 @@ current_confirmend = byDateWorldWide.tail(2)
 # df_global_1 = df_confirmed.iloc[:, -1]  # take last column for latest data
 # dfCombined = pd.concat([df_global, df_global_1], axis=1, sort=False)
 # dfCombined.set_axis([*dfCombined.columns[:-1], 'count'], axis=1, inplace=True)
-df_confirmed_wordmap = df_confirmed.iloc[:, [0, 1, 2, 3, -1]]
-df_confirmed_wordmap.set_axis(
-    [*df_confirmed_wordmap.columns[:-1], 'count'], axis=1, inplace=True)
+df_confirmed_worldmap = df_confirmed.iloc[:, [0, 1, 2, 3, -1]]
+df_confirmed_worldmap.set_axis(
+    [*df_confirmed_worldmap.columns[:-1], 'count'], axis=1, inplace=True)
 
 df_death_worldmap = df_death.iloc[:, [0, 1, 2, 3, -1]]
 df_death_worldmap.set_axis(
@@ -103,9 +103,9 @@ df_dateCountryDiffTotal["time2double"] = df_dateCountryDiffTotal["time2double"].
     [np.inf, -np.inf], np.nan)
 
 df_dateCountryDiffTotal = df_dateCountryDiffTotal.reset_index()
-filter_list = df_confirmed_wordmap.sort_values("count", ascending=False).head(10)[
-    "Country/Region"]
-filter_list = filter_list.to_list()
+df_filter_list = pd.DataFrame(df_confirmed_worldmap.groupby("Country/Region")["count"].sum())
+filter_list = df_filter_list.sort_values("count", ascending=False).head(10)
+filter_list = list(filter_list.index)
 if "China" not in filter_list:
     filter_list.append("China")
 df_dateCountryDiffTotal = df_dateCountryDiffTotal[df_dateCountryDiffTotal["Country/Region"].isin(
@@ -160,14 +160,14 @@ fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
 
 fig_worldmap = go.Figure()
 
-fig_worldmap.add_trace(go.Scattermapbox(lat=df_confirmed_wordmap["Lat"],
-                                        lon=df_confirmed_wordmap["Long"],
+fig_worldmap.add_trace(go.Scattermapbox(lat=df_confirmed_worldmap["Lat"],
+                                        lon=df_confirmed_worldmap["Long"],
                                         name="Confirmed",
-                                        hovertext=df_confirmed_wordmap["count"],
+                                        hovertext=df_confirmed_worldmap["count"],
                                         marker=go.scattermapbox.Marker(
                                             color="red",
                                             opacity=0.7,
-                                            size=df_confirmed_wordmap["count"],
+                                            size=df_confirmed_worldmap["count"],
                                             sizeref=9000),
 
                                         ))
@@ -197,7 +197,7 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_death_worldmap["Lat"],
 
 fig_worldmap.update_layout(mapbox_style="open-street-map",
                            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-                           title='Nuclear Waste Sites on Campus',
+                           title='COVID by Country',
                            autosize=False,
                            showlegend=True)
 
