@@ -52,7 +52,7 @@ df_confirmed_flat = pd.merge(df_confirmed_flat, df_recoverd_flat, how="outer", o
 df_confirmed_flat = pd.merge(df_confirmed_flat, df_death_flat, how="outer", on=[
                              "Province/State", "Country/Region", "Date"])
 
-
+df_confirmed_flat["active"] = df_confirmed_flat["count"] - (df_confirmed_flat["recoverd_count"]+df_confirmed_flat["death_count"])
 # Confirmed Cases prep step
 df_byDateCountry = df_confirmed_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
@@ -156,7 +156,13 @@ fig_df_byDateCountry = px.line(x=df_byDateCountryTop5["Date"],
 
 fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
                                   y="diff", color="Country/Region", hover_name="Date", marginal_x="rug", marginal_y="histogram",  title="Total Cases and Diff by Date")
+
+
 fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
+
+fig_activeCasesByDate = px.line(df_dateCountryDiffTotal, x="Date",
+                                  y="active", color="Country/Region", hover_name="Date",  title="Total Active Cases by Date")
+
 
 fig_worldmap = go.Figure()
 
@@ -304,6 +310,16 @@ app.layout = html.Div(className='container-fluid', children=[
             )
         ])
     ),
+    dbc.Row(
+        dbc.Col([
+            dcc.Graph(
+                id='fig_activeCasesByDate',
+                figure=fig_activeCasesByDate
+            )
+        ])
+    ),
+
+    
 
     dbc.Row(
         dbc.Col([
