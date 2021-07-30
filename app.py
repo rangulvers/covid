@@ -52,7 +52,8 @@ df_confirmed_flat = pd.merge(df_confirmed_flat, df_recoverd_flat, how="outer", o
 df_confirmed_flat = pd.merge(df_confirmed_flat, df_death_flat, how="outer", on=[
                              "Province/State", "Country/Region", "Date"])
 
-df_confirmed_flat["active"] = df_confirmed_flat["count"] - (df_confirmed_flat["recoverd_count"]+df_confirmed_flat["death_count"])
+df_confirmed_flat["active"] = df_confirmed_flat["count"] - \
+    (df_confirmed_flat["recoverd_count"]+df_confirmed_flat["death_count"])
 # Confirmed Cases prep step
 df_byDateCountry = df_confirmed_flat.groupby(
     ["Date", "Country/Region"], as_index=False).sum()
@@ -103,7 +104,8 @@ df_dateCountryDiffTotal["time2double"] = df_dateCountryDiffTotal["time2double"].
     [np.inf, -np.inf], np.nan)
 
 df_dateCountryDiffTotal = df_dateCountryDiffTotal.reset_index()
-df_filter_list = pd.DataFrame(df_confirmed_worldmap.groupby("Country/Region")["count"].sum())
+df_filter_list = pd.DataFrame(
+    df_confirmed_worldmap.groupby("Country/Region")["count"].sum())
 filter_list = df_filter_list.sort_values("count", ascending=False).head(10)
 filter_list = list(filter_list.index)
 if "China" not in filter_list:
@@ -161,7 +163,7 @@ fig_changesDiffTotal = px.scatter(df_dateCountryDiffTotal, x="count",
 fig_changesDiffTotal.update_layout(xaxis_type="log", yaxis_type="log")
 
 fig_activeCasesByDate = px.line(df_dateCountryDiffTotal, x="Date",
-                                  y="active", color="Country/Region", hover_name="Date",  title="Total Active Cases by Date")
+                                y="active", color="Country/Region", hover_name="Date",  title="Total Active Cases by Date")
 
 
 fig_worldmap = go.Figure()
@@ -173,7 +175,7 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_confirmed_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="red",
                                             opacity=0.7,
-                                            size=df_confirmed_worldmap["count"],
+                                            size=2,
                                             sizeref=9000),
 
                                         ))
@@ -185,7 +187,7 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_recoverd_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="green",
                                             opacity=0.7,
-                                            size=df_recoverd_worldmap["count"],
+                                            size=1,
                                             sizeref=9000),
                                         ))
 
@@ -197,7 +199,7 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_death_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="black",
                                             opacity=0.7,
-                                            size=df_death_worldmap["count"],
+                                            size=3,
                                             sizeref=9000),
                                         ))
 
@@ -319,7 +321,7 @@ app.layout = html.Div(className='container-fluid', children=[
         ])
     ),
 
-    
+
 
     dbc.Row(
         dbc.Col([
