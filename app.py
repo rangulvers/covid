@@ -129,15 +129,16 @@ fig_byDateWorldWide.add_scatter(x=byDateWorldWide["Date"],
                                 y=byDateWorldWide["count"],
                                 name="Confirmed Cases World Wide")
 
-fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
-                            y=byDateWorldWide["time2double"],
-                            name="Time 2 Double")
-fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
-                            y=byDateWorldWide["death_time2double"],
-                            name="Death Time 2 Double")
-fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
-                            y=byDateWorldWide["recoverd_time2double"],
-                            name="recoverd Time 2 Double")
+# Removed time 2 double for now to have a clear chart
+# fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
+#                             y=byDateWorldWide["time2double"],
+#                             name="Time 2 Double")
+# fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
+#                             y=byDateWorldWide["death_time2double"],
+#                             name="Death Time 2 Double")
+# fig_byDateWorldWide.add_bar(x=byDateWorldWide["Date"],
+#                             y=byDateWorldWide["recoverd_time2double"],
+#                             name="recoverd Time 2 Double")
 
 
 fig_byDateWorldWidePct = px.line(x=byDateWorldWide["Date"],
@@ -175,8 +176,8 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_confirmed_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="red",
                                             opacity=0.7,
-                                            size=2,
-                                            sizeref=9000),
+                                            size=500,
+                                            sizeref=1000),
 
                                         ))
 
@@ -187,8 +188,8 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_recoverd_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="green",
                                             opacity=0.7,
-                                            size=1,
-                                            sizeref=9000),
+                                            size=100,
+                                            sizeref=1000),
                                         ))
 
 
@@ -199,8 +200,8 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_death_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="black",
                                             opacity=0.7,
-                                            size=3,
-                                            sizeref=9000),
+                                            size=1000,
+                                            sizeref=1000),
                                         ))
 
 fig_worldmap.update_layout(mapbox_style="open-street-map",
@@ -259,7 +260,8 @@ app.layout = html.Div(className='container-fluid', children=[
                         html.H5(current_confirmend["count"].tail(
                             1).values[0], className="card-title"),
                         html.P(
-                            f"This is a change of {current_confirmend['diff'].tail(1).values[0]} or {current_confirmend['pct_change'].tail(1).values[0]} (PCT_CHANGE) to yesterday")
+                            f"This is a change of {current_confirmend['diff'].tail(1).values[0]} to the last dataset")
+                        # f"This is a change of {current_confirmend['diff'].tail(1).values[0]} or {current_confirmend['pct_change'].tail(1).values[0]} (PCT_CHANGE) to yesterday")
                     ]
                 )], color="warning", inverse=True
             )),
