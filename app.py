@@ -176,8 +176,8 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_confirmed_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="red",
                                             opacity=0.7,
-                                            size=500,
-                                            sizeref=1000),
+                                            size=100,
+                                            sizeref=100),
 
                                         ))
 
@@ -188,8 +188,8 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_recoverd_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="green",
                                             opacity=0.7,
-                                            size=100,
-                                            sizeref=1000),
+                                            size=50,
+                                            sizeref=100),
                                         ))
 
 
@@ -200,8 +200,8 @@ fig_worldmap.add_trace(go.Scattermapbox(lat=df_death_worldmap["Lat"],
                                         marker=go.scattermapbox.Marker(
                                             color="black",
                                             opacity=0.7,
-                                            size=1000,
-                                            sizeref=1000),
+                                            size=10,
+                                            sizeref=100),
                                         ))
 
 fig_worldmap.update_layout(mapbox_style="open-street-map",
