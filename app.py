@@ -1,3 +1,4 @@
+from tkinter import BEVEL
 import corona
 import plotly.express as px
 import plotly.graph_objects as go
@@ -21,6 +22,7 @@ def create_new_cases_graph(country_filter):
 
     fig_cases_by_country = px.bar(
         bycountry, x="Date", y="diff", title=f"New daily cases for : {country_filter}", template="simple_white")
+
     return fig_cases_by_country
 
 
