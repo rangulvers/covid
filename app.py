@@ -1,4 +1,3 @@
-from tkinter import BEVEL
 import corona
 import plotly.express as px
 import plotly.graph_objects as go
