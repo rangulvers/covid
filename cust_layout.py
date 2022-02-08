@@ -30,7 +30,7 @@ card_fig_overall = [
 view = html.Div(className='container-fluid', children=[
 
     html.Div(className='jumbotron', children=[
-        dcc.Markdown(f'''
+        dcc.Markdown('''
         # COVID-19 Dashboard
         All information is pulled from the Johns Hopkins University [Github Page](https://www.github.com/CSSEGISandData)''')
     ]),

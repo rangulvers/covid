@@ -1,5 +1,13 @@
 import pandas as pd
 
+"""Corona Class to generate chart figure from dataset
+
+    Returns:
+        bycountry : chart showing corona numbers by country
+        overall : chart showing the overall corona numbers
+
+    """
+
 
 class Corona(object):
     def __init__(self):
@@ -7,6 +15,8 @@ class Corona(object):
         self.df_confirmed = None
         self.df_confirmed_flat = None
         self.filter = None
+        """Create Covid DF from Github Source
+        """
 
     def create_covid_df(self):
         self.df_confirmed = pd.read_csv(
@@ -18,6 +28,8 @@ class Corona(object):
         self.df_confirmed_flat["Date"] = pd.to_datetime(
             self.df_confirmed_flat["Date"])
         self.filter = self.df_confirmed_flat["Country/Region"].unique()
+        """Create new Graph by Country
+        """
 
     def new_cases_graph_data(self, country_filter):
         bycountry = self.df_confirmed_flat[self.df_confirmed_flat["Country/Region"]
@@ -26,6 +38,8 @@ class Corona(object):
         bycountry["7days"] = bycountry["count"].rolling(7).sum()
 
         return bycountry
+        """Create new graph overall
+        """
 
     def new_overall_cases_graph(self, country_filter):
         overall = self.df_confirmed_flat[self.df_confirmed_flat["Country/Region"]
