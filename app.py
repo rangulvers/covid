@@ -6,7 +6,7 @@ import graph
 
 # Configure the Dash App
 app = dash.Dash(__name__, external_stylesheets=[
-                cust_layout.dbc.themes.BOOTSTRAP])
+                cust_layout.dbc.themes.MINTY])
 app.layout = cust_layout.view
 server = app.server
 
