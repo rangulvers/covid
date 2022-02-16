@@ -12,6 +12,14 @@ server = app.server
 
 
 @app.callback(
+    dash.dependencies.Output('select_chart_theme_output', 'children'),
+    [dash.dependencies.Input('select_chart_theme', 'value')]
+)
+def set_chart_theme(chart_theme):
+    graph.Graph.theme = chart_theme
+
+
+@app.callback(
     dash.dependencies.Output('fig_cases_by_country', 'figure'),
     [dash.dependencies.Input('filter_by_country', 'value')]
 )
