@@ -4,29 +4,6 @@ import dash_bootstrap_components as dbc
 from corona import dataset
 
 
-card_fig_cases_by_country = [
-    dbc.CardHeader("New daily cases"),
-    dbc.CardBody(
-        [
-            dcc.Graph(
-                id='fig_cases_by_country'
-            ),
-        ]
-    ),
-]
-
-card_fig_overall = [
-    dbc.CardHeader("Overall cases"),
-    dbc.CardBody(
-        [
-            dcc.Graph(
-                id='fig_overall_cases'
-            ),
-        ]
-    ),
-]
-
-
 view = html.Div(className='container-fluid', children=[
 
     html.Div(className='jumbotron', children=[
@@ -72,10 +49,32 @@ view = html.Div(className='container-fluid', children=[
     html.Br(),
     dbc.Row(
         [
-            dbc.Col(dbc.Card(card_fig_cases_by_country,
-                             color="primary", outline=True)),
-            dbc.Col(dbc.Card(card_fig_overall,
-                             color="primary", outline=True)),
+            dbc.Col(
+                dbc.Card(
+                    [
+                        dbc.CardHeader("New daily cases"),
+                        dbc.CardBody(
+                            [
+                                dcc.Graph(
+                                    id='fig_cases_by_country'
+                                ),
+                            ]
+                        ),
+                    ],
+                    color="primary", outline=True)),
+            dbc.Col(
+                dbc.Card(
+                    [
+                        dbc.CardHeader("Overall cases"),
+                        dbc.CardBody(
+                            [
+                                dcc.Graph(
+                                    id='fig_overall_cases'
+                                ),
+                            ]
+                        ),
+                    ],
+                    color="primary", outline=True)),
         ]
     )
 ])
