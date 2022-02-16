@@ -15,6 +15,9 @@ class Corona(object):
         self.df_confirmed = None
         self.df_confirmed_flat = None
         self.filter = None
+        self.chart_themes = ['ggplot2', 'seaborn', 'simple_white', 'plotly',
+                             'plotly_white', 'plotly_dark', 'presentation', 'xgridoff',
+                             'ygridoff', 'gridon', 'none']
         """Create Covid DF from Github Source
         """
 
