@@ -35,11 +35,9 @@ class Corona(object):
         bycountry = self.df_confirmed_flat[self.df_confirmed_flat["Country/Region"]
                                            == country_filter]
         bycountry["diff"] = bycountry["count"].diff()
-        bycountry["7days"] = bycountry["count"].rolling(7).sum()
+        bycountry["7days"] = bycountry["diff"].rolling(7).mean()
 
         return bycountry
-        """Create new graph overall
-        """
 
     def new_overall_cases_graph(self, country_filter):
         overall = self.df_confirmed_flat[self.df_confirmed_flat["Country/Region"]
