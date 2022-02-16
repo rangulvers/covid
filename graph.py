@@ -1,5 +1,7 @@
+from fractions import Fraction
 from mimetypes import init
 from re import template
+from turtle import title
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -8,8 +10,46 @@ class Graph(object):
     theme = "simple_white"
 
     def overall_cases_graph(overall, country_filter):
-        fig_overall_cases = px.line(
-            overall, x="Date", y="count", title=f"Overall cases for : {country_filter}", template=Graph.theme)
+
+        fig_overall_cases = go.Figure(data=[
+            go.Line(
+                x=overall["Date"],
+                y=overall["count"],
+                name="Overall cases"
+            )
+        ])
+
+        fig_overall_cases.update_layout(template=Graph.theme)
+
+        fig_overall_cases.update_layout(
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True
+                ),
+                type="date"
+            )
+        )
 
         return fig_overall_cases
 
@@ -24,5 +64,35 @@ class Graph(object):
         ])
 
         fig_cases_by_country.update_layout(template=Graph.theme)
+
+        fig_cases_by_country.update_layout(
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True
+                ),
+                type="date"
+            )
+        )
 
         return fig_cases_by_country
