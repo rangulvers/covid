@@ -1,10 +1,7 @@
-from re import template
-from statistics import mode
 import corona
-import plotly.express as px
-import plotly.graph_objects as go
 import dash
 import cust_layout
+import graph
 
 
 # Configure the Dash App
@@ -20,14 +17,7 @@ server = app.server
 )
 def create_new_cases_graph(country_filter):
     bycountry = corona.dataset.new_cases_graph_data(country_filter)
-    fig_cases_by_country = go.Figure(data=[
-        go.Bar(x=bycountry["Date"],
-               y=bycountry["diff"],
-               name="# of Cases"),
-        go.Line(x=bycountry["Date"],
-                y=bycountry["7days"],
-                name="7 days avg.")
-    ])
+    fig_cases_by_country = graph.Graph.new_cases_graph(bycountry)
     return fig_cases_by_country
 
 
@@ -37,8 +27,8 @@ def create_new_cases_graph(country_filter):
 )
 def create_overall_cases_graph(country_filter):
     overall = corona.dataset.new_overall_cases_graph(country_filter)
-    fig_overall_cases = px.line(
-        overall, x="Date", y="count", title=f"Overall cases for : {country_filter}", template="simple_white")
+    fig_overall_cases = graph.Graph.overall_cases_graph(
+        overall, country_filter)
 
     return fig_overall_cases
 
